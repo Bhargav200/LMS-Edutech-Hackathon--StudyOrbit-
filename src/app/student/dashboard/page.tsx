@@ -18,6 +18,9 @@ export default function StudentDashboard() {
   const [liveClass, setLiveClass] = useState<any>(null);
   const [assignment, setAssignment] = useState<any>(null);
   const [fee, setFee] = useState<any>(null);
+  const [completedLessons, setCompletedLessons] = useState<number>(2);
+  const [totalLessons, setTotalLessons] = useState<number>(4);
+  const [gradedAssignment, setGradedAssignment] = useState<any>(null);
 
   useEffect(() => {
     async function loadData() {
@@ -39,7 +42,43 @@ export default function StudentDashboard() {
         .eq('student_id', storedId)
         .single();
       
-      if (progressData) setProgress(progressData);
+      if (progressData) {
+        setProgress(progressData);
+
+        // Fetch completed/total lessons metrics dynamically
+        try {
+          const { data: modules } = await supabase
+            .from('modules')
+            .select('id')
+            .eq('course_id', progressData.course_id);
+            
+          if (modules && modules.length > 0) {
+            const moduleIds = modules.map(m => m.id);
+            const { data: courseLessons } = await supabase
+              .from('lessons')
+              .select('id')
+              .in('module_id', moduleIds);
+              
+            if (courseLessons && courseLessons.length > 0) {
+              setTotalLessons(courseLessons.length);
+              const lessonIds = courseLessons.map(l => l.id);
+              
+              const { count: compCount } = await supabase
+                .from('student_lesson_progress')
+                .select('*', { count: 'exact', head: true })
+                .eq('student_id', storedId)
+                .eq('completed', true)
+                .in('lesson_id', lessonIds);
+                
+              if (compCount !== null) {
+                setCompletedLessons(compCount);
+              }
+            }
+          }
+        } catch (err) {
+          console.error("Error computing lesson progress:", err);
+        }
+      }
 
       // 3. Fetch upcoming live class
       const { data: liveData } = await supabase
@@ -60,6 +99,22 @@ export default function StudentDashboard() {
         .single();
       
       if (assignData) setAssignment(assignData);
+
+      // Fetch graded assignment dynamically
+      try {
+        const { data: gradedData } = await supabase
+          .from('assignment_submissions')
+          .select('*, assignments(title)')
+          .eq('student_id', storedId)
+          .eq('status', 'graded')
+          .order('graded_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (gradedData) setGradedAssignment(gradedData);
+      } catch (err) {
+        console.error("Error fetching graded assignment:", err);
+      }
 
       // 5. Fetch fee dues
       const { data: feeData } = await supabase
@@ -145,7 +200,7 @@ export default function StudentDashboard() {
                   <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-zinc-900 border border-zinc-800 text-[10px] font-semibold text-zinc-400">
                       <BookOpen className="w-3.5 h-3.5 text-zinc-500" />
-                      2 / 4 Lessons Completed
+                      {completedLessons} / {totalLessons} Lessons Completed
                     </span>
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-zinc-900 border border-zinc-800 text-[10px] font-semibold text-zinc-400">
                       <Trophy className="w-3.5 h-3.5 text-yellow-500" />
@@ -221,15 +276,27 @@ export default function StudentDashboard() {
                     </div>
                   </div>
                   
-                  <div className="flex gap-4 p-3.5 rounded-xl bg-zinc-900/40 border border-zinc-800/50 opacity-60">
-                    <div className="p-2.5 rounded-lg bg-zinc-800 text-zinc-500 flex items-center justify-center self-start">
-                      <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                  {gradedAssignment ? (
+                    <div className="flex gap-4 p-3.5 rounded-xl bg-zinc-900/40 border border-zinc-800/50 opacity-60">
+                      <div className="p-2.5 rounded-lg bg-zinc-800 text-zinc-500 flex items-center justify-center self-start">
+                        <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-xs font-bold text-zinc-400 truncate line-through">{gradedAssignment.assignments?.title || 'Assignment Graded'}</h4>
+                        <p className="text-[10px] text-zinc-600 mt-1 uppercase font-semibold">Graded: {gradedAssignment.grade}/100</p>
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-xs font-bold text-zinc-400 truncate line-through">Next.js App Router Layout Practice</h4>
-                      <p className="text-[10px] text-zinc-600 mt-1 uppercase font-semibold">Graded: 92/100</p>
+                  ) : (
+                    <div className="flex gap-4 p-3.5 rounded-xl bg-zinc-900/40 border border-zinc-800/50 opacity-60">
+                      <div className="p-2.5 rounded-lg bg-zinc-800 text-zinc-500 flex items-center justify-center self-start">
+                        <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-xs font-bold text-zinc-400 truncate line-through">Next.js App Router Layout Practice</h4>
+                        <p className="text-[10px] text-zinc-600 mt-1 uppercase font-semibold">Graded: 92/100</p>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               ) : (
                 <p className="text-zinc-500 text-xs">No pending assignments found.</p>
@@ -255,22 +322,35 @@ export default function StudentDashboard() {
                   <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-3">
                     <div className="flex justify-between items-center">
                       <span className="text-xs text-zinc-400 font-medium font-sans">Payment Plan:</span>
-                      <span className="text-xs text-white font-semibold uppercase font-outfit">2 Installments</span>
+                      <span className="text-xs text-white font-semibold uppercase font-outfit">
+                        {fee.plan?.installments ? `${fee.plan.installments.length} Installments` : 'Standard'}
+                      </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-xs text-zinc-400 font-medium font-sans">Collected Total:</span>
-                      <span className="text-xs text-emerald-400 font-bold font-outfit">INR 4,250.00</span>
+                      <span className="text-xs text-emerald-400 font-bold font-outfit">
+                        {fee.currency || 'INR'} {Number(fee.paid_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
                     </div>
                     <div className="flex justify-between items-center border-t border-zinc-800/80 pt-2.5">
                       <span className="text-xs text-zinc-400 font-semibold font-sans">Outstanding Due:</span>
-                      <span className="text-xs text-rose-400 font-bold font-outfit">INR 4,250.00</span>
+                      <span className="text-xs text-rose-400 font-bold font-outfit">
+                        {fee.currency || 'INR'} {Number((fee.total_amount || 0) - (fee.paid_amount || 0)).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
                     </div>
                   </div>
 
-                  <div className="p-3 bg-rose-500/5 border border-rose-500/10 rounded-xl flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4 text-rose-400 animate-pulse" />
-                    <span className="text-[10px] text-zinc-400 font-semibold font-outfit">Installment 2 is due soon (June 1st)</span>
-                  </div>
+                  {fee.status === 'paid' ? (
+                    <div className="p-3 bg-emerald-500/5 border border-emerald-500/10 rounded-xl flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                      <span className="text-[10px] text-zinc-400 font-semibold font-outfit">All tuition installments are fully settled!</span>
+                    </div>
+                  ) : (
+                    <div className="p-3 bg-rose-500/5 border border-rose-500/10 rounded-xl flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 text-rose-400 animate-pulse" />
+                      <span className="text-[10px] text-zinc-400 font-semibold font-outfit">Installment outstanding is due soon.</span>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <p className="text-zinc-500 text-xs">No active tuition plan logged.</p>

@@ -24,42 +24,70 @@ export default function PortalShell({ children }: PortalShellProps) {
   const [showNotifications, setShowNotifications] = useState(false);
 
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
+
+  const updateFavicon = (activeTheme: 'dark' | 'light') => {
+    if (typeof window === 'undefined') return;
+    const iconPath = activeTheme === 'light' ? "/logos/dark/icon.png" : "/logos/light/icon.png";
+    const links = document.querySelectorAll("link[rel*='icon']");
+    if (links.length > 0) {
+      links.forEach((link: any) => {
+        link.href = iconPath;
+      });
+    } else {
+      const link = document.createElement('link');
+      link.rel = 'shortcut icon';
+      link.type = 'image/png';
+      link.href = iconPath;
+      document.head.appendChild(link);
+    }
+  };
 
   useEffect(() => {
-    // Determine active role from the URL path to ensure the layout matches the page!
-    let activeRole = 'student';
-    if (pathname.startsWith('/admin')) {
-      activeRole = 'admin';
-    } else if (pathname.startsWith('/faculty')) {
-      activeRole = 'faculty';
-    } else if (pathname.startsWith('/parent')) {
-      activeRole = 'parent';
-    } else if (pathname.startsWith('/student')) {
-      activeRole = 'student';
-    } else {
-      activeRole = localStorage.getItem('study_orbit_user_role') || 'student';
+    // 1. Enforce credentials routing role guard to prevent session mixing
+    let requiredRole = '';
+    if (pathname.startsWith('/admin')) requiredRole = 'admin';
+    else if (pathname.startsWith('/faculty')) requiredRole = 'faculty';
+    else if (pathname.startsWith('/parent')) requiredRole = 'parent';
+    else if (pathname.startsWith('/student')) requiredRole = 'student';
+
+    const loggedInRole = localStorage.getItem('study_orbit_user_role');
+
+    if (!loggedInRole) {
+      setIsAuthorized(false);
+      router.push('/');
+      return;
     }
 
-    localStorage.setItem('study_orbit_user_role', activeRole);
-    setRole(activeRole);
+    if (requiredRole && loggedInRole !== requiredRole) {
+      setIsAuthorized(false);
+      const timer = setTimeout(() => {
+        router.push('/');
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+
+    setIsAuthorized(true);
+    setRole(loggedInRole);
 
     // Retrieve name and details
-    let storedName = localStorage.getItem('study_orbit_user_name');
+    let storedName = localStorage.getItem('study_orbit_orbit_user_name');
     if (!storedName || storedName === 'Guest') {
-      if (activeRole === 'admin') storedName = 'Sarah Chen';
-      else if (activeRole === 'faculty') storedName = 'Dr. Aris Thorne';
-      else if (activeRole === 'parent') storedName = 'Meera Sharma';
+      if (loggedInRole === 'admin') storedName = 'Sarah Chen';
+      else if (loggedInRole === 'faculty') storedName = 'Dr. Aris Thorne';
+      else if (loggedInRole === 'parent') storedName = 'Meera Sharma';
       else storedName = 'Rohan Sharma';
       localStorage.setItem('study_orbit_user_name', storedName);
     }
-    setUserName(storedName);
+    setUserName(storedName || localStorage.getItem('study_orbit_user_name') || 'Guest');
 
-    const storedEmail = localStorage.getItem('study_orbit_user_email') || `${activeRole}@quantum.edu`;
+    const storedEmail = localStorage.getItem('study_orbit_user_email') || `${loggedInRole}@quantum.edu`;
     setUserEmail(storedEmail);
 
     // Retrieve and apply theme
     const savedTheme = (localStorage.getItem('study_orbit_theme') as 'dark' | 'light') || 'dark';
     setTheme(savedTheme);
+    updateFavicon(savedTheme);
     if (savedTheme === 'light') {
       document.documentElement.classList.add('light-mode');
     } else {
@@ -71,6 +99,7 @@ export default function PortalShell({ children }: PortalShellProps) {
     const nextTheme = theme === 'dark' ? 'light' : 'dark';
     setTheme(nextTheme);
     localStorage.setItem('study_orbit_theme', nextTheme);
+    updateFavicon(nextTheme);
     if (nextTheme === 'light') {
       document.documentElement.classList.add('light-mode');
     } else {
@@ -129,6 +158,54 @@ export default function PortalShell({ children }: PortalShellProps) {
     }
   };
 
+  if (isAuthorized === null) {
+    return (
+      <div className="min-h-screen bg-obsidian flex flex-col justify-center items-center relative overflow-hidden text-zinc-300 font-sans">
+        <div className="w-12 h-12 rounded-full border-4 border-t-blue-500 border-zinc-800 animate-spin" />
+      </div>
+    );
+  }
+
+  if (isAuthorized === false) {
+    const requiredRole = pathname.startsWith('/admin') ? 'admin' : pathname.startsWith('/faculty') ? 'faculty' : pathname.startsWith('/parent') ? 'parent' : 'student';
+    const loggedInRole = typeof window !== 'undefined' ? localStorage.getItem('study_orbit_user_role') : '';
+
+    return (
+      <div className="min-h-screen bg-obsidian flex flex-col justify-center items-center relative overflow-hidden px-4 text-zinc-300 font-sans">
+        {/* Glowing background blurs */}
+        <div className="absolute top-[-10%] left-[-10%] w-[35rem] h-[35rem] rounded-full bg-rose-600/5 blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[35rem] h-[35rem] rounded-full bg-orange-600/5 blur-[120px] pointer-events-none" />
+
+        <div className="w-full max-w-md glass-panel rounded-2xl p-8 relative overflow-hidden shadow-2xl text-center space-y-6">
+          <div className="absolute top-0 left-0 w-full h-[4px] bg-rose-500" />
+          
+          <div className="w-16 h-16 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center mx-auto animate-pulse">
+            <Shield className="w-8 h-8" />
+          </div>
+
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold font-outfit text-white">Access Denied</h2>
+            <p className="text-sm text-zinc-400 leading-relaxed">
+              This section is restricted to <span className="text-white font-bold uppercase">{requiredRole}</span> portals only. 
+              You are currently authenticated as <span className="text-white font-bold uppercase">{loggedInRole || 'Guest'}</span>.
+            </p>
+          </div>
+
+          <div className="p-3 bg-zinc-950/40 border border-zinc-850/80 rounded-xl text-xs text-zinc-500">
+            Redirecting to authorization gateway in a few seconds...
+          </div>
+
+          <button 
+            onClick={() => router.push('/')}
+            className="w-full py-3 rounded-xl bg-gradient-royal text-white text-xs font-semibold hover:opacity-95 shadow transition-all cursor-pointer"
+          >
+            Authenticate Now
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-obsidian flex flex-col relative text-zinc-300 font-sans">
       
@@ -148,7 +225,7 @@ export default function PortalShell({ children }: PortalShellProps) {
           
           <div className="flex items-center gap-2 cursor-pointer h-9" onClick={() => router.push('/')}>
             <img 
-              src={theme === 'light' ? "/logos/light/logo.png" : "/logos/dark/logo.png"} 
+              src={theme === 'light' ? "/logos/dark/logo.png" : "/logos/light/logo.png"} 
               alt="StudyOrbit Logo" 
               className="h-7 w-auto object-contain transition-all"
             />

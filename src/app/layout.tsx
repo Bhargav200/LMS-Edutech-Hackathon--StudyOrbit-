@@ -16,7 +16,12 @@ const outfit = Outfit({
 
 export const metadata: Metadata = {
   title: "StudyOrbit - Quantum Academics LMS",
-  description: "Unified operate system replacingadministrative, billing, streaming, and collaboration tools.",
+  description: "Unified operating system replacing administrative, billing, streaming, and collaboration tools.",
+  icons: {
+    icon: "/logos/light/icon.png",
+    shortcut: "/logos/light/icon.png",
+    apple: "/logos/light/icon.png",
+  }
 };
 
 export default function RootLayout({

@@ -46,7 +46,7 @@ export default function AdminBatches() {
         .from('batches')
         .select(`
           *,
-          courses (
+          courses!batches_course_id_fkey (
             title
           )
         `)
@@ -128,7 +128,7 @@ export default function AdminBatches() {
         })
         .select(`
           *,
-          courses (
+          courses!batches_course_id_fkey (
             title
           )
         `)

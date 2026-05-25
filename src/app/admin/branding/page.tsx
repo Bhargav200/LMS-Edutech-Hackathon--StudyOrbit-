@@ -37,6 +37,13 @@ export default function AdminBranding() {
 
       if (error) {
         console.error('Error loading institute branding:', error);
+        // Robust fallbacks to prevent blank states
+        setInstName('Quantum Academics');
+        setPrimaryColor('#2563EB');
+        setSecondaryColor('#7C3AED');
+        setTimezone('Asia/Kolkata');
+        setAttThreshold(75);
+        setCheckInMethod('code');
       } else if (data) {
         setInstitute(data);
         setInstName(data.name);

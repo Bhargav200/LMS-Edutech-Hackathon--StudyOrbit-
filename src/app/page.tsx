@@ -12,9 +12,27 @@ export default function Login() {
   const [error, setError] = useState('');
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
 
+  const updateFavicon = (activeTheme: 'dark' | 'light') => {
+    if (typeof window === 'undefined') return;
+    const iconPath = activeTheme === 'light' ? "/logos/dark/icon.png" : "/logos/light/icon.png";
+    const links = document.querySelectorAll("link[rel*='icon']");
+    if (links.length > 0) {
+      links.forEach((link: any) => {
+        link.href = iconPath;
+      });
+    } else {
+      const link = document.createElement('link');
+      link.rel = 'shortcut icon';
+      link.type = 'image/png';
+      link.href = iconPath;
+      document.head.appendChild(link);
+    }
+  };
+
   useEffect(() => {
     const savedTheme = (localStorage.getItem('study_orbit_theme') as 'dark' | 'light') || 'dark';
     setTheme(savedTheme);
+    updateFavicon(savedTheme);
     if (savedTheme === 'light') {
       document.documentElement.classList.add('light-mode');
     } else {
@@ -26,6 +44,7 @@ export default function Login() {
     const nextTheme = theme === 'dark' ? 'light' : 'dark';
     setTheme(nextTheme);
     localStorage.setItem('study_orbit_theme', nextTheme);
+    updateFavicon(nextTheme);
     if (nextTheme === 'light') {
       document.documentElement.classList.add('light-mode');
     } else {
@@ -115,15 +134,9 @@ export default function Login() {
         router.push(matched.target);
       }, 800);
     } else {
-      // Bypasses for demo sandbox ease: grant admin access for other custom emails
-      localStorage.setItem('study_orbit_user_id', 'd3b07384-d113-4318-a89e-4cdeee958b90');
-      localStorage.setItem('study_orbit_user_email', email);
-      localStorage.setItem('study_orbit_user_name', email.split('@')[0]);
-      localStorage.setItem('study_orbit_user_role', 'admin');
-      
       setTimeout(() => {
         setLoading(false);
-        router.push('/admin/dashboard');
+        setError('Invalid credentials. Please log in using a registered StudyOrbit account (e.g. sarah@quantum.edu for Admin, rohan@quantum.edu for Student).');
       }, 800);
     }
   };
@@ -167,7 +180,7 @@ export default function Login() {
           <div className="space-y-2">
             <div className="flex items-center gap-3 h-16">
               <img 
-                src={theme === 'light' ? "/logos/light/logo.png" : "/logos/dark/logo.png"} 
+                src={theme === 'light' ? "/logos/dark/logo.png" : "/logos/light/logo.png"} 
                 alt="StudyOrbit Logo" 
                 className="h-12 w-auto object-contain transition-all"
               />
