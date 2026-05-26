@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Sparkles, X, Send, Bot, User, Orbit, MessageSquareCode, ArrowRight } from 'lucide-react';
+import { X, Send, Bot, User, Orbit } from 'lucide-react';
 
 export default function AIStudyBuddy() {
   const [isOpen, setIsOpen] = useState(false);
@@ -46,7 +46,7 @@ export default function AIStudyBuddy() {
       } else if (query.includes('rls') || query.includes('security') || query.includes('database')) {
         reply = "In **Supabase**, **Row-Level Security (RLS)** restricts which table rows are visible or modifiable for a specific user. It works by evaluating Postgres policies on every query. For example, to restrict students to only viewing their own assignment submissions, you use: \n\n`CREATE POLICY \"Select Submissions\" ON submissions FOR SELECT USING (student_id = auth.uid());` \n\nThis automatically filters rows at the database engine level, keeping tenant data completely isolated.";
       } else if (query.includes('next') || query.includes('study') || query.includes('schedule') || query.includes('todo')) {
-        reply = "Looking at your progress in **Quantum Academics**, your next step is **Lesson 2.1: Configuring Supabase Client**. You have also got an assignment **'Supabase Schema Design & RLS Policies'** due in 5 days! Would you like me to give you a quick recap of the prerequisite Lesson 1.2 on Server Components?";
+        reply = "Looking at your progress in **StudyOrbit**, your next step is **Lesson 2.1: Configuring Supabase Client**. You have also got an assignment **'Supabase Schema Design & RLS Policies'** due in 5 days! Would you like me to give you a quick recap of the prerequisite Lesson 1.2 on Server Components?";
       } else if (query.includes('server component') || query.includes('client component') || query.includes('rsc')) {
         reply = "React **Server Components (RSC)** render on the server, meaning zero JavaScript bundle weight is shipped to the client. They fetch data directly from databases securely. **Client Components** (with the `'use client'` directive) execute in the browser and support state (`useState`), effects (`useEffect`), and browser event listeners. Best practice is to fetch data in Server Components, then pass the data down to interactive Client Components!";
       } else if (query.includes('code') || query.includes('typescript') || query.includes('jsx')) {

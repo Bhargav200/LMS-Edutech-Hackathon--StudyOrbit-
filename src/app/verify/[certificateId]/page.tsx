@@ -3,14 +3,32 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
-import { Award, ShieldCheck, Calendar, Globe, ArrowLeft, Download, Orbit, Sparkles } from 'lucide-react';
+import { Award, ShieldCheck, ArrowLeft, Download, Orbit } from 'lucide-react';
+
+interface CertificateData {
+  id?: string;
+  student_id?: string;
+  course_id?: string;
+  batch_id?: string;
+  issued_at: string;
+  certificate_url?: string;
+  verification_code: string;
+  courses?: {
+    title: string;
+  };
+}
+
+interface StudentProfile {
+  full_name: string;
+  avatar_url?: string;
+}
 
 export default function PublicVerification() {
   const params = useParams();
   const router = useRouter();
   const certCode = params.certificateId as string;
-  const [cert, setCert] = useState<any>(null);
-  const [student, setStudent] = useState<any>(null);
+  const [cert, setCert] = useState<CertificateData | null>(null);
+  const [student, setStudent] = useState<StudentProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -92,7 +110,7 @@ export default function PublicVerification() {
               <div className="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-[#D4AF37]" />
 
               <div className="space-y-2">
-                <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#D4AF37] font-outfit">Quantum Academics</span>
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#D4AF37] font-outfit">StudyOrbit</span>
                 <h3 className="text-xl md:text-2xl font-extrabold text-white font-outfit uppercase tracking-wider">Certificate of Completion</h3>
               </div>
 
@@ -137,7 +155,7 @@ export default function PublicVerification() {
               </div>
 
               <p className="text-xs text-zinc-400 leading-relaxed font-sans mb-4">
-                This professional credential was cryptographically signed by Quantum Academics and stored securely in the StudyOrbit ledger on {new Date(cert.issued_at).toLocaleDateString()}.
+                This professional credential was cryptographically signed by StudyOrbit and stored securely in the StudyOrbit ledger on {new Date(cert.issued_at).toLocaleDateString()}.
               </p>
 
               <div className="space-y-2 pt-4 border-t border-zinc-800/80 font-sans">
@@ -147,7 +165,7 @@ export default function PublicVerification() {
                 </div>
                 <div className="flex justify-between items-center text-xs">
                   <span className="text-zinc-500">Institution:</span>
-                  <span className="text-white font-semibold">Quantum Academics</span>
+                  <span className="text-white font-semibold">StudyOrbit</span>
                 </div>
                 <div className="flex justify-between items-center text-xs">
                   <span className="text-zinc-500">Academic Code:</span>

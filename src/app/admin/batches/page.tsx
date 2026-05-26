@@ -439,7 +439,7 @@ export default function AdminBatches() {
                         <div key={idx} className="flex justify-between items-center p-3 rounded-xl bg-zinc-950/40 border border-zinc-850/80 text-xs">
                           <div>
                             <span className="font-semibold text-white block">{enr.profiles?.full_name}</span>
-                            <span className="text-[9px] text-zinc-500 mt-0.5 block">{enr.profiles?.phone || 'Quantum Cohort Member'}</span>
+                            <span className="text-[9px] text-zinc-500 mt-0.5 block">{enr.profiles?.phone || 'StudyOrbit Cohort Member'}</span>
                           </div>
                           
                           <span className={`text-[9px] px-2 py-0.5 rounded border uppercase tracking-wider font-bold ${enr.fee_status?.paid ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' : 'text-amber-400 bg-amber-500/10 border-amber-500/20'}`}>

@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { 
   Home, BookOpen, FileText, CreditCard, Calendar, MessageSquare, 
-  Award, Shield, GraduationCap, Users, Layers, Palette, 
-  Menu, X, Bell, LogOut, Search, Orbit, ChevronRight, MessageCircle,
+  Award, Shield, GraduationCap, Layers, Palette, 
+  Menu, Bell, LogOut, Search,
   Sun, Moon
 } from 'lucide-react';
 
@@ -19,7 +19,6 @@ export default function PortalShell({ children }: PortalShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [role, setRole] = useState<string>('student');
   const [userName, setUserName] = useState<string>('Guest');
-  const [userEmail, setUserEmail] = useState<string>('');
   const [notificationsCount, setNotificationsCount] = useState(3);
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -31,8 +30,8 @@ export default function PortalShell({ children }: PortalShellProps) {
     const iconPath = activeTheme === 'light' ? "/logos/dark/icon.png" : "/logos/light/icon.png";
     const links = document.querySelectorAll("link[rel*='icon']");
     if (links.length > 0) {
-      links.forEach((link: any) => {
-        link.href = iconPath;
+      links.forEach((link) => {
+        (link as HTMLLinkElement).href = iconPath;
       });
     } else {
       const link = document.createElement('link');
@@ -54,21 +53,22 @@ export default function PortalShell({ children }: PortalShellProps) {
     const loggedInRole = localStorage.getItem('study_orbit_user_role');
 
     if (!loggedInRole) {
-      setIsAuthorized(false);
+      setTimeout(() => {
+        setIsAuthorized(false);
+      }, 0);
       router.push('/');
       return;
     }
 
     if (requiredRole && loggedInRole !== requiredRole) {
-      setIsAuthorized(false);
+      setTimeout(() => {
+        setIsAuthorized(false);
+      }, 0);
       const timer = setTimeout(() => {
         router.push('/');
       }, 3000);
       return () => clearTimeout(timer);
     }
-
-    setIsAuthorized(true);
-    setRole(loggedInRole);
 
     // Retrieve name and details
     let storedName = localStorage.getItem('study_orbit_orbit_user_name');
@@ -79,21 +79,25 @@ export default function PortalShell({ children }: PortalShellProps) {
       else storedName = 'Rohan Sharma';
       localStorage.setItem('study_orbit_user_name', storedName);
     }
-    setUserName(storedName || localStorage.getItem('study_orbit_user_name') || 'Guest');
-
-    const storedEmail = localStorage.getItem('study_orbit_user_email') || `${loggedInRole}@quantum.edu`;
-    setUserEmail(storedEmail);
-
     // Retrieve and apply theme
     const savedTheme = (localStorage.getItem('study_orbit_theme') as 'dark' | 'light') || 'dark';
-    setTheme(savedTheme);
     updateFavicon(savedTheme);
     if (savedTheme === 'light') {
       document.documentElement.classList.add('light-mode');
     } else {
       document.documentElement.classList.remove('light-mode');
     }
-  }, [pathname]);
+
+    // Defer state updates to avoid React effect warning
+    const stateTimer = setTimeout(() => {
+      setIsAuthorized(true);
+      setRole(loggedInRole);
+      setUserName(storedName || 'Guest');
+      setTheme(savedTheme);
+    }, 0);
+
+    return () => clearTimeout(stateTimer);
+  }, [pathname, router]);
 
   const toggleTheme = () => {
     const nextTheme = theme === 'dark' ? 'light' : 'dark';
@@ -232,7 +236,7 @@ export default function PortalShell({ children }: PortalShellProps) {
           </div>
           
           <span className="text-xs font-semibold px-2 py-0.5 rounded border uppercase tracking-wider ml-2 hidden sm:inline-block font-outfit bg-zinc-900/60 border-zinc-800 text-zinc-400">
-            Quantum Academics
+            StudyOrbit
           </span>
         </div>
 
@@ -284,11 +288,11 @@ export default function PortalShell({ children }: PortalShellProps) {
                   </div>
                   <div className="p-2.5 rounded-lg bg-zinc-900/50 hover:bg-zinc-900 border border-zinc-800/50 cursor-pointer" onClick={() => router.push('/student/assignments')}>
                     <p className="font-semibold text-white">New Assignment Published</p>
-                    <p className="text-zinc-500 mt-1">"Supabase Schema Design & RLS Policies" is open.</p>
+                    <p className="text-zinc-500 mt-1">&ldquo;Supabase Schema Design &amp; RLS Policies&rdquo; is open.</p>
                   </div>
                   <div className="p-2.5 rounded-lg bg-zinc-900/50 hover:bg-zinc-900 border border-zinc-800/50 cursor-pointer" onClick={() => router.push('/admin/branding')}>
                     <p className="font-semibold text-white">System Activated</p>
-                    <p className="text-zinc-500 mt-1">Pro license activated for Quantum Academics.</p>
+                    <p className="text-zinc-500 mt-1">Pro license activated for StudyOrbit.</p>
                   </div>
                 </div>
               </div>
@@ -345,7 +349,7 @@ export default function PortalShell({ children }: PortalShellProps) {
               <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping-once" />
               <div className="flex-1 min-w-0">
                 <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Active Workspace</p>
-                <p className="text-xs font-semibold text-white truncate">Quantum Academics</p>
+                <p className="text-xs font-semibold text-white truncate">StudyOrbit</p>
               </div>
             </div>
           </div>

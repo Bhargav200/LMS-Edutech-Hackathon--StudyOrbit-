@@ -14,7 +14,7 @@ export default function AdminBranding() {
   const [loading, setLoading] = useState(true);
 
   // Forms state
-  const [instName, setInstName] = useState('Quantum Academics');
+  const [instName, setInstName] = useState('StudyOrbit');
   const [primaryColor, setPrimaryColor] = useState('#2563EB');
   const [secondaryColor, setSecondaryColor] = useState('#7C3AED');
   const [timezone, setTimezone] = useState('Asia/Kolkata');
@@ -38,7 +38,7 @@ export default function AdminBranding() {
       if (error) {
         console.error('Error loading institute branding:', error);
         // Robust fallbacks to prevent blank states
-        setInstName('Quantum Academics');
+        setInstName('StudyOrbit');
         setPrimaryColor('#2563EB');
         setSecondaryColor('#7C3AED');
         setTimezone('Asia/Kolkata');
@@ -277,7 +277,7 @@ export default function AdminBranding() {
               {/* Body inside mock */}
               <div className="py-6 space-y-4">
                 <div className="p-4 rounded-xl bg-zinc-950/60 border border-zinc-850 text-left space-y-2">
-                  <span className="text-[8px] font-bold uppercase tracking-wider font-outfit" style={{ color: primaryColor }}>Quantum Course Player</span>
+                  <span className="text-[8px] font-bold uppercase tracking-wider font-outfit" style={{ color: primaryColor }}>StudyOrbit Course Player</span>
                   <h4 className="text-sm font-bold text-white font-outfit leading-tight">React & Next.js App Router Masterclass</h4>
                   <p className="text-[10px] text-zinc-400 leading-normal line-clamp-2">Learn white-label database configurations, role portals layout assembly, and Deno cert cryptographic setups.</p>
                 </div>

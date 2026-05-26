@@ -86,7 +86,7 @@ export default function AdminDashboard() {
               Administrator, <span className="text-gradient">Sarah Chen</span> 👑
             </h2>
             <p className="text-sm text-zinc-400 max-w-xl font-sans leading-relaxed">
-              Oversee the full tenant ecosystem of Quantum Academics. Settle financial billing logs, configure white-label branding configurations, and monitor cohort schedules.
+              Oversee the full tenant ecosystem of StudyOrbit. Settle financial billing logs, configure white-label branding configurations, and monitor cohort schedules.
             </p>
           </div>
         </div>

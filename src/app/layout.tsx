@@ -15,7 +15,7 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "StudyOrbit - Quantum Academics LMS",
+  title: "StudyOrbit - SaaS EdTech Platform",
   description: "Unified operating system replacing administrative, billing, streaming, and collaboration tools.",
   icons: {
     icon: "/logos/light/icon.png",

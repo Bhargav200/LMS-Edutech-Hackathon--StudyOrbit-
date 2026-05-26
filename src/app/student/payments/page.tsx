@@ -9,10 +9,42 @@ import {
   ArrowRight, Download, HelpCircle, X, Check, Award, Activity, Orbit 
 } from 'lucide-react';
 
+interface Installment {
+  amount: number;
+  status: string;
+}
+
+interface FeePlan {
+  installments?: Installment[];
+}
+
+interface Fee {
+  id: string;
+  student_id: string;
+  total_amount: number;
+  paid_amount: number;
+  status: string;
+  plan?: FeePlan;
+}
+
+interface Payment {
+  id: string;
+  fee_id: string;
+  student_id: string;
+  amount: number;
+  currency: string;
+  gateway: string;
+  gateway_payment_id?: string;
+  status: string;
+  invoice_url?: string;
+  platform_fee?: number;
+  paid_at: string;
+}
+
 export default function StudentPayments() {
   const [studentId, setStudentId] = useState('f9b07384-f113-4318-f89e-4cdeee958b92');
-  const [fee, setFee] = useState<any>(null);
-  const [payments, setPayments] = useState<any[]>([]);
+  const [fee, setFee] = useState<Fee | null>(null);
+  const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Checkout Drawer states
@@ -24,7 +56,9 @@ export default function StudentPayments() {
 
   useEffect(() => {
     const storedId = localStorage.getItem('study_orbit_user_id') || 'f9b07384-f113-4318-f89e-4cdeee958b92';
-    setStudentId(storedId);
+    setTimeout(() => {
+      setStudentId(storedId);
+    }, 0);
 
     async function loadFinances() {
       // 1. Fetch fees data
@@ -98,7 +132,6 @@ export default function StudentPayments() {
       if (updateFeeErr) throw updateFeeErr;
 
       // 3. Create Invoice
-      const invId = 'in' + Math.random().toString(36).substring(2, 10).toUpperCase();
       await supabase
         .from('invoices')
         .insert({
@@ -131,8 +164,9 @@ export default function StudentPayments() {
         setShowCheckout(false);
       }, 1500);
 
-    } catch (err: any) {
-      console.error('Error processing checkout:', err.message);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error('Error processing checkout:', message);
     } finally {
       setProcessing(false);
     }
@@ -168,7 +202,7 @@ export default function StudentPayments() {
                   <h3 className="text-sm font-bold uppercase tracking-wider text-amber-400 font-outfit mb-4">Installment Tiers</h3>
                   
                   <div className="space-y-4">
-                    {fee.plan?.installments?.map((inst: any, idx: number) => {
+                    {fee.plan?.installments?.map((inst: Installment, idx: number) => {
                       const isPaid = inst.status === 'paid';
                       return (
                         <div key={idx} className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 flex items-center justify-between gap-4">

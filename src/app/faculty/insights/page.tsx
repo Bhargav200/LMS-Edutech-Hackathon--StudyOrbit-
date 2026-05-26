@@ -75,7 +75,7 @@ export default function FacultyInsights() {
             name: item.profiles?.full_name || 'Seeded Cohort Member',
             avatar: item.profiles?.avatar_url,
             phone: item.profiles?.phone,
-            courseName: item.courses?.title || 'Quantum Architect',
+            courseName: item.courses?.title || 'StudyOrbit Architect',
             progress: progressVal,
             lastActive: item.last_accessed_at,
             attendanceRate: attRate,

@@ -65,7 +65,7 @@ export default function StudentCertificates() {
                     
                     <div>
                       <h3 className="text-base font-bold text-white leading-snug font-outfit truncate">{c.title}</h3>
-                      <p className="text-[10px] text-zinc-500 font-semibold font-sans mt-0.5 uppercase tracking-wider">Quantum Academics</p>
+                      <p className="text-[10px] text-zinc-500 font-semibold font-sans mt-0.5 uppercase tracking-wider">StudyOrbit</p>
                     </div>
                   </div>
 

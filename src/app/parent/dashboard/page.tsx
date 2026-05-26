@@ -301,7 +301,7 @@ export default function ParentDashboard() {
                       {courseProgress?.courses?.title || 'Loading active program...'}
                     </h4>
                   </div>
-                  <span className="text-[9px] text-zinc-500 font-semibold block font-sans">Seeded: Quantum Academics</span>
+                  <span className="text-[9px] text-zinc-500 font-semibold block font-sans">Seeded: StudyOrbit</span>
                 </div>
 
               </div>
